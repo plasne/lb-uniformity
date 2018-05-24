@@ -42,7 +42,7 @@ setInterval(_ => {
     })();
 
     // make the query
-    const { host, port } = fromURL(list[index]);
+    const { host, port } = fromURL(cmd.url);
     const req = http.get({
         host: host,
         port: port,
