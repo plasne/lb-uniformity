@@ -51,6 +51,8 @@ Before I show individual test results, I wanted to reveal the findings:
 
 Summary: The load balancer routes traffic in a very uniform pattern except during brief periods of time where it simply doesn't route to an arbitrary node.
 
+![findings](/images/findings.png)
+
 ## False Downtime
 
 If I add the diagnostics logging to the load balancer to see probe health, I do see that there are multiple periods of downtime every hour. However, that doesn't appear to be accurate, but maybe what is causing the issue.

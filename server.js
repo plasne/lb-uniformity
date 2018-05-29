@@ -1,9 +1,19 @@
 
 // includes
+const cmd = require("commander");
 const readline = require("readline");
 const express = require("express");
+const os = require("os");
+
+// define command line parameters
+cmd
+    .version("0.1.0")
+    .option("-i, --id <s>", `The name to report back to the client for aggregation.`)
+    .parse(process.argv);
 
 // globals
+const id = cmd.id || os.hostname();
+console.log(`This server is identified as "${id}".`);
 let connections = 0;
 
 // config express
@@ -20,7 +30,7 @@ web.get("/", (req, res) => {
     process.stdout.write(`connections: ${connections}`);
 
     // respond
-    res.send("hello");
+    res.send(id);
 
 });
 
