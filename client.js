@@ -69,10 +69,10 @@ function execute(localPort) {
         if (cmd.summary) {
             // show the number of connections by host
             if (lastSummaryCount > 0) readline.moveCursor(process.stdout, 0, -lastSummaryCount);
-            for (const key in summary) {
-                process.stdout.write(`  ${key}: ${summary[key].length}\n`);
+            for (const key in events) {
+                process.stdout.write(`  ${key}: ${events[key].length}\n`);
             }
-            lastSummaryCount = Object.keys(summary).length;
+            lastSummaryCount = Object.keys(events).length;
         } else {
             // show the local port used
             console.log(req.socket.localPort);
