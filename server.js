@@ -4,6 +4,7 @@ const cmd = require("commander");
 const readline = require("readline");
 const express = require("express");
 const os = require("os");
+const lsof = require("lsof");
 
 // define command line parameters
 cmd
@@ -23,11 +24,8 @@ const admin = express();
 // hello
 web.get("/", (req, res) => {
 
-    // show the number of connections
+    // increment the number of connections
     connections++;
-    readline.clearLine(process.stdout, 0);
-    readline.cursorTo(process.stdout, 0);
-    process.stdout.write(`connections: ${connections}`);
 
     // respond
     res.send(id);
@@ -48,3 +46,12 @@ const port_admin = process.env.PORT_ADMIN || 8081;
 admin.listen(port_admin, () => {
     console.log(`Admin listening on port ${port_admin}...`);
 });
+
+// show status every second
+setInterval(_ => {
+    lsof.counters(counters => {
+        readline.clearLine(process.stdout, 0);
+        readline.cursorTo(process.stdout, 0);
+        process.stdout.write(`connections: ${connections}, open files: ${counters.open}`);
+    });
+}, 1000);
