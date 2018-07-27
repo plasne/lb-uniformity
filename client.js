@@ -129,6 +129,9 @@ function findGaps(max) {
         if (!found) dedupe.push(entry);
     }
 
+    // sort
+    dedupe.sort((a, b) => a.ts - b.ts);
+
     return dedupe;
 }
 

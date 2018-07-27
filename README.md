@@ -120,3 +120,7 @@ Single client on Ubuntu 17.10 with the application using sequentially assigned p
 Single client on Ubuntu 17.10 with the application using randomly assigned ports:
 
 ![single-ubuntu-rnd](/images/single-ubuntu-rnd.png)
+
+Single client on Ubuntu 17.10 with the application using OS-assigned ports and the improved gap logic versus calling a specific node directly:
+
+![single-ubuntu-gap](/images/single-ubuntu-gap.png)
