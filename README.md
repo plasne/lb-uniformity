@@ -8,6 +8,8 @@ All my tests were run with:
 * Azure Load Balancer Basic
 * Roughly 30k total connections @ 100/sec
 
+HINT: Use Azure Load Balancer Standard.
+
 ## Ephemeral Port Selection
 
 When an output network request is made, the operating system will assign a local port from the ephemeral port range. The range and selection method is operating system dependent and there is a lot of ambiguous information out there on how this is done.
@@ -45,9 +47,9 @@ Before I show individual test results, I wanted to reveal the findings:
 
 * Traffic being sent from a single source or multiple sources did not matter.
 
-* Load Balancer Basic: The traffic is near perfectly uniform most of the time, but every so often, 1 out of the 3 backends would not get new connections for a short period. I am not sure if this is time-sensitive or based on the number of connections. If you run the test for roughly 30k connections there will be several times that a node isn't getting traffic but it could be any of the 3 nodes with no discernable pattern.
+* **Load Balancer Basic**: The traffic is near perfectly uniform most of the time, but every so often, 1 out of the 3 backends would not get new connections for a short period. I am not sure if this is time-sensitive or based on the number of connections. If you run the test for roughly 30k connections there will be several times that a node isn't getting traffic but it could be any of the 3 nodes with no discernable pattern.
 
-* Load Balancer Standard: The traffic is near perfectly uniform with no issues.
+* **Load Balancer Standard**: The traffic is near perfectly uniform with no issues.
 
 This chart shows the problem with Load Balancer Basic:
 
