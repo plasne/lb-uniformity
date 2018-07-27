@@ -61,6 +61,16 @@ To verify that is inaccurate, I ran the "probe.js" with an interval of 10/sec re
 
 ![false-downtime](/images/false-downtime.png)
 
+## Calculating Gaps
+
+Improved gap logic was added to address the possibility that specific requests could lag and show as a gap even if other requests were being handled by the node. When the application is terminated using ctrl-C, the gaps will be calculated which can take a minute or two.
+
+To calculate the gaps, the following steps are taken:
+
+1. All requests except the last 1 second are considered.
+2. The gap is measured as the number of milliseconds between a successful reply and the next successful request.
+3. The gap is reported if it is greater than the GAP parameter (defaults to 10 x INTERVAL).
+
 ## Using the Application
 
 This application is written in Node.js, so you must install that first. To install the dependencies:
@@ -72,7 +82,7 @@ npm install
 To run the server accepting web traffic on port 80 and health probe checks on port 81, do the following:
 
 ```bash
-sudo PORT_WEB=80 PORT_ADMIN=81 node server
+sudo WEB_PORT=80 ADMIN_PORT=81 node server
 ```
 
 To run the client against a load balancer at address 100.100.100.100 with connections made every 10 milliseconds using OS-assigned ports:
@@ -93,11 +103,15 @@ To run the client against a load balancer at address 100.100.100.100 with connec
 node client --url http://100.100.100.100 --interval 10 --random
 ```
 
+To stop the client, simply do a ctrl-C and the summary information will be displayed and gaps calculated.
+
 To run the probe, make sure you have a VM on the same network and do this:
 
 ``` bash
 node probe --url http://100.100.100.100:81,http://100.100.100.101:81,http://100.100.100.102:81
 ```
+
+All of the tools will accept --help to show all possible parameters.
 
 ## Test Results
 
@@ -124,3 +138,7 @@ Single client on Ubuntu 17.10 with the application using randomly assigned ports
 Single client on Ubuntu 17.10 with the application using OS-assigned ports and the improved gap logic versus calling a specific node directly:
 
 ![single-ubuntu-gap](/images/single-ubuntu-gap.png)
+
+Single client on a Mac with the application using OS-assigned ports, the improved gap logic, and using Load Balancer Standard.
+
+![single-load-balancer-std](/images/single-load-balancer-std.png)

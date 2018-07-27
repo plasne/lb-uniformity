@@ -8,20 +8,41 @@ const keepalive = require('agentkeepalive');
 // define command line parameters
 cmd
     .version("0.1.0")
-    .option("-u, --url <s>", `The URL to contact.`)
-    .option("-i, --interval <i>", `The number of milliseconds between each call.`, parseInt)
-    .option("-e, --ephemeral-port <i>", `Start at this port number and increment.`, parseInt)
-    .option("--increment <i>", `When using a specified ephemeral port, increment by this number.`, parseInt)
+    .option("-u, --url <s>", `[REQUIRED] URL. The URL to contact.`)
+    .option("-i, --interval <i>", `INTERVAL. The number of milliseconds between each call. Defaults to "100" ms.`, parseInt)
+    .option("-e, --ephemeral-port <i>", `EPHEMERAL_PORT. Start at this port number and increment.`, parseInt)
+    .option("-z, --increment <i>", `INCREMENT. When using a specified ephemeral port, increment by this number. Defaults to "1".`, parseInt)
+    .option("-g, --gap <i>", `GAP. The minimum number of milliseconds between requests to a specific node to be considered an abnormal gap. Defaults to "10 x INTERVAL" ms.`, parseInt)
     .option("-r, --random", `Picks a random port each time.`)
     .option("-s, --summary", `Shows the summary not the outbound ports.`)
+    .on("--help", () => {
+        console.log("");
+        console.log("The client will send a request to the URL every INTERVAL ms using ephmeral ports assigned by the host operating system. Alternatively, you can specify a specific EPHEMERAL_PORT and an amount to INCREMENT it with each call, or you can specify to use RANDOM ports between 32768 and 61000.");
+        console.log("");
+    })
     .parse(process.argv);
 
 // globals
-const interval = cmd.interval || 100;
+const url           = cmd.url           || process.env.URL;
+const interval      = cmd.interval      || process.env.INTERVAL       || 100;
+const ephemeralPort = cmd.ephemeralPort || process.env.EPHEMERAL_PORT;
+const increment     = (cmd.increment != null) ? cmd.increment : process.env.INCREMENT || 1;
+const gap           = cmd.gap           || process.env.GAP            || 10 * interval;
+const random        = (cmd.random) ? true : false;
+const summary       = (cmd.summary) ? true : false;
 const events = [];
 let lastSummaryCount = 0;
 let offset = 0;
-const increment = (cmd.increment != null) ? cmd.increment : 1;
+
+// logs
+if (!url) throw new Error("You must specify a URL.");
+console.log(`URL            = "${url}".`);
+console.log(`INTERVAL       = "${interval}" ms.`);
+console.log(`EPHEMERAL_PORT = "${ephemeralPort || 'allow OS to select'}".`);
+console.log(`INCREMENT      = "${increment}".`);
+console.log(`GAP            = "${gap}" ms.`);
+console.log(`RANDOM?        = "${random}".`);
+console.log(`SUMMARY?       = "${summary}".`);
 
 // use agentkeepalive
 const agent = new keepalive({
@@ -29,7 +50,7 @@ const agent = new keepalive({
 });
 
 // extract a URL into host and port
-function fromURL(url) {
+function fromURL() {
     const hostport = url.replace("http://", "");
     const hostport_split = hostport.split(":", 2);
     if (hostport_split.length > 1) {
@@ -43,7 +64,7 @@ function execute(localPort) {
     const start = new Date();
 
     // make the query
-    const { host, port } = fromURL(cmd.url);
+    const { host, port } = fromURL();
     const req = http.get({
         host: host,
         port: port,
@@ -66,7 +87,7 @@ function execute(localPort) {
         });
 
         // show updating data
-        if (cmd.summary) {
+        if (summary) {
             // show the number of connections by host
             if (lastSummaryCount > 0) readline.moveCursor(process.stdout, 0, -lastSummaryCount);
             for (const key in events) {
@@ -140,12 +161,10 @@ setInterval(_ => {
 
     // select the appropriate local port
     const localPort = (() => {
-        if (cmd.random) {
+        if (random) {
             return Math.floor((Math.random() * 28232) + 32768);    // 32768 - 61000
-        } else if (cmd.outboundPort) {
-            return (cmd.outboundPort);
-        } else if (cmd.ephemeralPort) {
-            return (cmd.ephemeralPort + offset);
+        } else if (ephemeralPort) {
+            return (ephemeralPort + offset);
         } else {
             return undefined; // let the OS decide
         }
@@ -169,7 +188,7 @@ process.on("SIGINT", () => {
     console.log("");
     console.log("searching for gaps...");
     console.log("");
-    const gaps = findGaps(10 * interval);
+    const gaps = findGaps(gap);
     console.log("gaps:")
     if (gaps.length > 0) {
         for (const gap of gaps) {

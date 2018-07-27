@@ -9,13 +9,21 @@ const lsof = require("lsof");
 // define command line parameters
 cmd
     .version("0.1.0")
-    .option("-i, --id <s>", `The name to report back to the client for aggregation.`)
+    .option("-i, --id <s>", `HOST_ID. The name to report back to the client for aggregation.`)
+    .option("-w, --web-port <i>", `WEB_PORT. The port to host the web service on. Defaults to 8080.`)
+    .option("-a, --admin-port <i>", `ADMIN_PORT. The port to host the admin service on. Defaults to 8081.`)
     .parse(process.argv);
 
 // globals
-const id = cmd.id || os.hostname();
-console.log(`This server is identified as "${id}".`);
+const id        = cmd.id        || process.env.HOST_ID    || os.hostname();
+const webPort   = cmd.webPort   || process.env.WEB_PORT   || 8080;
+const adminPort = cmd.adminPort || process.env.ADMIN_PORT || 8081;
 let connections = 0;
+
+// log
+console.log(`HOST_ID    = "${id}".`);
+console.log(`WEB_PORT   = "${webPort}".`);
+console.log(`ADMIN_PORT = "${adminPort}".`);
 
 // config express
 const web = express();
@@ -38,13 +46,11 @@ admin.get("/", (req, res) => {
 });
 
 // start listening
-const port_web = process.env.PORT_WEB || 8080;
-web.listen(port_web, () => {
-    console.log(`Web listening on port ${port_web}...`);
+web.listen(webPort, () => {
+    console.log(`Web listening on port ${webPort}...`);
 });
-const port_admin = process.env.PORT_ADMIN || 8081;
-admin.listen(port_admin, () => {
-    console.log(`Admin listening on port ${port_admin}...`);
+admin.listen(adminPort, () => {
+    console.log(`Admin listening on port ${adminPort}...`);
 });
 
 // show status every second
